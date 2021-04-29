@@ -1,5 +1,5 @@
 CEF offscreen application pushing it's framebuffer over a namedpipe (to be read by unity).
-Based on cef sample project "cef-project".
+Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded/cef-project)
 
 The [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/) (CEF) is a simple framework for embedding Chromium-based browsers in other applications.
 

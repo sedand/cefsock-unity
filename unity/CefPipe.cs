@@ -9,10 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using diag = System.Diagnostics;
 
-public class CEF_Client : MonoBehaviour
+public class CefPipe : MonoBehaviour
 {
-    public string cefPath = "./Cef";
+    public string cefFolderName = "Cefpipe";
     public string pipeName = "cef_pipe";
+    public string cefExecutableName = "cefpipe";
+    
     public int bufferSize = 800 * 531 * 4; // TODO
 
     private NamedPipeClientStream pipeStream;
@@ -42,9 +44,9 @@ public class CEF_Client : MonoBehaviour
 
         // connect pipe - blocking
         string baseDir = new DirectoryInfo(Application.dataPath).Parent.FullName;
-        string cefPath = baseDir + "/Cef/cef_pipe";
-        Debug.Log("Looking for pipe at: "+cefPath);
-        pipeStream = new NamedPipeClientStream(".", cefPath, PipeDirection.InOut);
+        string pipePath = baseDir + "/"+cefFolderName+"/"+pipeName;
+        Debug.Log("Looking for pipe at: "+pipePath);
+        pipeStream = new NamedPipeClientStream(".", pipePath, PipeDirection.InOut);
         Debug.Log("Attempting to connect to pipe...");
         pipeStream.Connect(500);
         Debug.Log("Connected to pipe.");
@@ -53,15 +55,15 @@ public class CEF_Client : MonoBehaviour
     }
 
     void startCef(){
-        //string cefPath = @"./Cef";
-        string cefPathExec = cefPath + "/cefclient";
+        string wd = "./" + cefFolderName;
+        string cefPathExec = wd + "/" + cefExecutableName; // TODO windows?
 
         // Start the process, hide it, and listen to its output
         var processInfo = new diag.ProcessStartInfo();
         processInfo.Arguments = "--off-screen-rendering-enabled";
         processInfo.CreateNoWindow = true;
         processInfo.FileName = cefPathExec;
-        processInfo.WorkingDirectory = cefPath;
+        processInfo.WorkingDirectory = wd;
         processInfo.UseShellExecute = false;
         processInfo.RedirectStandardInput = true;
         processInfo.RedirectStandardOutput = true;
