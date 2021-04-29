@@ -124,6 +124,7 @@ add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 
 # Include CEF's application targets (executes <target>/CMakeLists.txt).
 add_subdirectory(cefpipe)
+add_subdirectory(cefsimple)
 
 # Allow includes relative to the current source directory.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
