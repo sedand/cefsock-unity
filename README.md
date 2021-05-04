@@ -23,17 +23,9 @@ This allows to show a live browser inside a unity scene.
 
 Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded/cef-project)
 
-## Overview
+## Build, deploy/integrate in unity, configure
 
-Setup requires the following 3 basic steps:
-1. Compile the cefpipe binary (automatically downloads CEF)
-2. Copy the binary and unity script to your unity project
-3. Configure the script in unity
-
-For 1. see README in folder `cef`
-
-## Deploy/Integrate in unity
-
-- After compilation, copy the application folder `build/cefpipe/Release` to the root of your unity project folder (optional: Rename it to `cefsock-unity`)
-- Copy the unity script ../unity/Cefsock-unity.cs to your unity project's Script folder.
-- Adjust the Cefpipe application path via the Unity GUI on the CefPipe script to match the application folder (If you did not rename the folder), so that unity is able to find the executable.
+1. Compile the cefpipe binary (automatically downloads CEF). See README in folder `cef`.
+2. After compilation, copy the application folder `build/cefpipe/Release` to the root of your unity project folder (optional: Rename it to `cefsock-unity`)
+3. Copy the unity script ../unity/Cefsock-unity.cs to your unity project's Script folder.
+4. Adjust the Cefpipe application path via the Unity GUI on the CefPipe script to match the application folder (if you did not rename the folder), so that unity is able to find the executable.
