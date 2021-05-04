@@ -45,7 +45,6 @@ public:
     }
    
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height) {
-        unsigned char* img = (unsigned char*)buffer;
         //printf("frame rendered");
 
         // send over socket
