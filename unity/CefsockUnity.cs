@@ -13,11 +13,11 @@ using diag = System.Diagnostics;
 
 public class CefsockUnity : MonoBehaviour
 {
-    public int imageWidth = 800;
-    public int imageHeight = 600;
+    public int imageWidth = 600;
+    public int imageHeight = 400;
 
-    public string cefFolderName = "Cefpipe";
-    public string cefExecutableName = "cefpipe";
+    public string cefFolderName = "cefsock";
+    public string cefExecutableName = "cefsock";
     private diag.Process cefProcess;
 
     private Thread socketThread;

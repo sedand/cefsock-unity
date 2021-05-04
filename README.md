@@ -25,7 +25,7 @@ Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded
 
 ## Build, deploy/integrate in unity, configure
 
-1. Compile the cefpipe binary (automatically downloads CEF). See README in folder `cef`.
-2. After compilation, copy the application folder `build/cefpipe/Release` to the root of your unity project folder (optional: Rename it to `cefsock-unity`)
+1. Compile the cefsock binary (automatically downloads CEF). See README in folder `cef`.
+2. After compilation, copy the application folder `build/cefsock/Release` to the root of your unity project folder (optional: Rename it to `cefsock`)
 3. Copy the unity script ../unity/Cefsock-unity.cs to your unity project's Script folder.
-4. Adjust the Cefpipe application path via the Unity GUI on the CefPipe script to match the application folder (if you did not rename the folder), so that unity is able to find the executable.
+4. Add the CefSockUnity script to a RawImage gameobject. Adjust the `Cef Folder Name` script parameter to match the application foldername (if you did not rename the folder), so that unity is able to find the executable.
