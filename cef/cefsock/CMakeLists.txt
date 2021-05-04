@@ -9,13 +9,13 @@
 #cefclient Linux sources
 set(CEFCLIENT_LINUX_SRCS
   #cefclient_gtk.cc
-  cefpipe.cc
+  cefsock.cc
   )
 source_group(cefclient FILES ${CEFCLIENT_LINUX_SRCS})
 
 #cefclient Windows sources
 set(CEFCLIENT_WINDOWS_SRCS
-  cefpipe_win.cc
+  cefsock_win.cc
   )
 source_group(cefclient FILES ${CEFCLIENT_WINDOWS_SRCS})
 
@@ -25,10 +25,10 @@ source_group(cefclient FILES ${CEFCLIENT_WINDOWS_SRCS})
 #
 
 # Target executable names.
-set(CEF_TARGET "cefpipe")
+set(CEF_TARGET "cefsock")
 if(OS_MAC)
-  set(CEF_HELPER_TARGET "cefpipe_Helper")
-  set(CEF_HELPER_OUTPUT_NAME "cefpipe Helper")
+  set(CEF_HELPER_TARGET "cefsock_Helper")
+  set(CEF_HELPER_OUTPUT_NAME "cefsock Helper")
 else()
   # Logical target used to link the libcef library.
   ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
