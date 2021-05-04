@@ -11,7 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using diag = System.Diagnostics;
 
-public class CefPipe : MonoBehaviour
+public class CefsockUnity : MonoBehaviour
 {
     public int imageWidth = 800;
     public int imageHeight = 600;

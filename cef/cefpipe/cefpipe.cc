@@ -4,28 +4,29 @@
 #include "include/cef_client.h"
 #include "include/cef_render_handler.h"
 
-#include <iostream> // andi: Debugging
+#include <iostream>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-// socket
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+
 #define PORT 8888
+#define TARGET_IP "127.0.0.1"
+#define BROWSER_WIDTH 600
+#define BROWSER_HEIGHT 400
 
 // debug file
 #include <fstream>
-#include <chrono>
 
 class OSRHandler : public CefRenderHandler {
 private:
     int renderWidth;
     int renderHeight;
     int sock;
-    int framecount = 0;
    
 public:
     OSRHandler(int width, int height, int socket) {
@@ -45,25 +46,16 @@ public:
    
     void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type, const RectList &dirtyRects, const void *buffer, int width, int height) {
         unsigned char* img = (unsigned char*)buffer;
-        printf("frame rendered (pixel[0]: (%d %d %d - %d)\n", img[2], img[1], img[0], img[3]);
+        //printf("frame rendered");
 
         // send over socket
-        int32 data_size = width*height*4;
+        // first a header specifying the size of the following frame
+        int32 data_size = width*height*4; // bgra
         std::cout << "sending header: " << data_size << std::endl;
         send(sock, &data_size, 4, 0); // dirty?
+        // now send the frame itself
         std::cout << "Writing buffer (" << data_size << ") to socket "  << " | " << "w x h: " << width << "x" << height << std::endl;
         send(sock, buffer, data_size, 0);
-
-        // debug to file
-        FILE* pFile;
-        std::string filename;
-        filename.append("buffer_");
-        filename.append(std::to_string(framecount));
-        filename.append(".data");
-        pFile = fopen(filename.c_str(), "wb");
-        framecount++;
-        //pFile = fopen("cef_pipe", "wb+");
-        fwrite(buffer, 1, width*height*4, pFile);
     }
    
     IMPLEMENT_REFCOUNTING(OSRHandler);
@@ -86,6 +78,8 @@ public:
     IMPLEMENT_REFCOUNTING(BrowserClient);
 };
 
+// DEBUG function for testing, sends a given file
+// TODO move/remove
 void sendfile(int socket, const char* filename){
     char * memblock = new char [0];
     std::streampos size;
@@ -119,9 +113,8 @@ int main(int argc, char* argv[]) {
       return exit_code;
 
     // SOCKET
-    int sock = 0;//, valread;
+    int sock = 0;
     struct sockaddr_in serv_addr;
-    //char buffer[1024] = {0};
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
@@ -132,7 +125,7 @@ int main(int argc, char* argv[]) {
     serv_addr.sin_port = htons(PORT);
        
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0) 
+    if(inet_pton(AF_INET, TARGET_IP, &serv_addr.sin_addr)<=0) 
     {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
@@ -146,6 +139,7 @@ int main(int argc, char* argv[]) {
     // END SOCKET
 
     // DEBUG SEND FILE
+    // TODO move/remove
     //sendfile(sock, "/tmp/600x400_2.data");
     //sendfile(sock, "/tmp/600x400.data");
     //sendfile(sock, "/tmp/600x400_2.data");
@@ -153,16 +147,13 @@ int main(int argc, char* argv[]) {
     CefSettings settings;
     CefInitialize(main_args, settings, NULL, NULL);
    
-   
     CefBrowserSettings browserSettings;
     CefWindowInfo window_info;
     window_info.SetAsWindowless(0);
-   
-    OSRHandler* osrHandler = new OSRHandler(600, 400, sock); // TODO cmd argument
+
+    OSRHandler* osrHandler = new OSRHandler(BROWSER_WIDTH, BROWSER_HEIGHT, sock);
     CefRefPtr<BrowserClient> browserClient = new BrowserClient(osrHandler);
    
-
-    //CefRefPtr<CefBrowser> browser = CefBrowserHost::CreateBrowserSync(window_info, browserClient.get(), "http://www.google.com", browserSettings, NULL);
     // Create the first browser window.
     CefBrowserHost::CreateBrowser(window_info, browserClient.get(), "https://duckduckgo.com/", browserSettings, nullptr, nullptr);
    

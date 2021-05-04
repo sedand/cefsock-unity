@@ -1,9 +1,14 @@
-CEF offscreen application pushing it's framebuffer over a namedpipe (to be read by unity).
-Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded/cef-project)
+# Cefsock-unity
 
-The [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/) (CEF) is a simple framework for embedding Chromium-based browsers in other applications.
+1. Compile the cefpipe binary (automatically downloads CEF)
+2. Copy the binary and unity script to your unity project
+3. Configure the script in unity
 
-# Setup
+---
+
+Following information is mostly taken from [cef-project](https://bitbucket.org/chromiumembedded/cef-project)
+
+## Setup
 
 First install some necessary tools.
 
@@ -17,7 +22,7 @@ First install some necessary tools.
 * MacOS: Xcode 8 or newer building on MacOS 10.11 (El Capitan) or newer for x86_64. Xcode 12.2 or newer building on MacOS 10.15.4 (Catalina) or newer for ARM64. The Xcode command-line tools must also be installed. Only 64-bit builds are supported on macOS.
 * Windows: Visual Studio 2015 Update 2 or newer building on Windows 7 or newer. Visual Studio 2019 and Windows 10 64-bit are recommended.
 
-# Build
+## Build
 
 Now run CMake which will download the CEF binary distribution from the [Spotify automated builder](https://cef-builds.spotifycdn.com/index.html) and generate build files for your platform. Then build using platform build tools. For example, using the most recent tool versions on each platform:
 
@@ -56,7 +61,5 @@ CMake supports different generators on each platform. Run `cmake --help` to list
 
 Ninja is a cross-platform open-source tool for running fast builds using pre-installed platform toolchains (GNU, clang, Xcode or MSVC). See comments in the "third_party/cef/cef_binary_*/CMakeLists.txt" file for Ninja usage instructions.
 
-# Next Steps
-
-[TODO] copy compiled application to your unity project folder
-[TODO] Add the unity script from ../unity/ to your project folder
+## Deploy/Integrate in unity:
+- See root folder README
