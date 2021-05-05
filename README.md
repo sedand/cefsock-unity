@@ -12,6 +12,11 @@ This allows to show a live browser inside a unity scene.
 - Cef invisible to the end user
 - Currently: View-only (no input fed back from unity to the browser)
 
+## TODO
+
+- Make cefsock configurable, currently `cefsock.cc` must be modified to change URL etc.
+- Windows version
+
 ## Considerations
 - Use a socket (not a named pipe as does [chromium-unity-server](https://github.com/roydejong/chromium-unity-server)) to communicate between CEF and unity
 - No additional wrappers (no CefGlue, no .NET bindings etc.)
@@ -25,6 +30,7 @@ Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded
 
 ## Build, deploy/integrate in unity, configure
 
+0. Modify `cefsock.cc`: Change URL, browser window size etc.
 1. Compile the cefsock binary (automatically downloads CEF). See README in folder `cef`.
 2. After compilation, copy the application folder `build/cefsock/Release` to the root of your unity project folder (optional: Rename it to `cefsock`)
 3. Copy the unity script ../unity/Cefsock-unity.cs to your unity project's Script folder.
