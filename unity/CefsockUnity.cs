@@ -18,6 +18,7 @@ public class CefsockUnity : MonoBehaviour
 
     public string cefFolderName = "cefsock";
     public string cefExecutableName = "cefsock";
+    public List<String> arguments = new List<String>{"--url=https://duckduckgo.com"};
     private diag.Process cefProcess;
 
     private Thread socketThread;
@@ -25,6 +26,8 @@ public class CefsockUnity : MonoBehaviour
     private Socket handler;
     private bool listening;
     public int port = 8888;
+
+    public bool verbose = false;
 
     protected byte[] frameBuffer;
     protected bool frameBufferChanged;
@@ -73,10 +76,12 @@ public class CefsockUnity : MonoBehaviour
     void startCef(){
         string wd = "./" + cefFolderName;
         string cefPathExec = wd + "/" + cefExecutableName; // TODO windows?
+        string procArgs = String.Join(" ", arguments);
+        Debug.Log("Cef arguments: "+procArgs);
 
         // Start the process, hide it, and listen to its output
         var processInfo = new diag.ProcessStartInfo();
-        //processInfo.Arguments = "--off-screen-rendering-enabled";
+        processInfo.Arguments = procArgs;
         processInfo.CreateNoWindow = true;
         processInfo.FileName = cefPathExec;
         processInfo.WorkingDirectory = wd;
@@ -98,6 +103,12 @@ public class CefsockUnity : MonoBehaviour
         //process.OutputDataReceived += Process_OutputDataReceived;
     }
 
+    void debugLog(string message){
+        if(verbose){
+            Debug.Log(message);
+        }
+    }
+
     void AsyncReceive(Socket client){
         Task.Run(new Action(() =>
             {
@@ -109,25 +120,25 @@ public class CefsockUnity : MonoBehaviour
                 }
                 */
                 while (client != null && client.Connected){
-                    Debug.Log("Receiving next frame header...");
+                    debugLog("Receiving next frame header...");
                     byte[] header = new byte[4];
                     int receivedHeaderBytes = client.Receive(header, 0, 4, SocketFlags.None);
-                    Debug.Log("Got "+receivedHeaderBytes+ " bytes");
+                    debugLog("Got "+receivedHeaderBytes+ " bytes");
                     int frameLength = BitConverter.ToInt32(header, 0);
-                    Debug.Log("Got next frame length: "+frameLength);
+                    debugLog("Got next frame length: "+frameLength);
 
                     byte[] loopBuffer = new byte[frameLength];
                     //int bytesReceivedTotal = 0;
                     int bytesReceived = 0;
                     while ((bytesReceived += client.Receive(loopBuffer, bytesReceived, frameLength-bytesReceived, SocketFlags.None)) > 0){
                         //bytesReceivedTotal += bytesReceived;
-                        Debug.Log("Received bytes: "+bytesReceived);// + " | Total: "+bytesReceivedTotal);
+                        debugLog("Received bytes: "+bytesReceived);// + " | Total: "+bytesReceivedTotal);
 
                         if(bytesReceived >= frameLength){ // TODO == ?
-                            Debug.Log("Frame receive complete");
+                            debugLog("Frame receive complete");
 
                             Buffer.BlockCopy(loopBuffer, 0, frameBuffer, 0, frameLength);
-                            Debug.Log("Copied frame to framebuffer");
+                            debugLog("Copied frame to framebuffer");
                             frameBufferChanged = true;
                             break;
                         }
@@ -189,8 +200,8 @@ public class CefsockUnity : MonoBehaviour
             browserTexture.Apply();
             frameBufferChanged = false;
 
-            File.WriteAllBytes("framebuffer-" + DateTime.Now.Ticks + ".data", frameBuffer);
-            Debug.Log("Wrote framebuffer to file");
+            //File.WriteAllBytes("framebuffer-" + DateTime.Now.Ticks + ".data", frameBuffer);
+            //Debug.Log("Wrote framebuffer to file");
         }
 
     }

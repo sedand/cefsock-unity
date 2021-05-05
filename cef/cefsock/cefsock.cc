@@ -50,10 +50,10 @@ public:
         // send over socket
         // first a header specifying the size of the following frame
         int32 data_size = width*height*4; // bgra
-        std::cout << "sending header: " << data_size << std::endl;
+        //std::cout << "sending header: " << data_size << std::endl;
         send(sock, &data_size, 4, 0); // dirty?
         // now send the frame itself
-        std::cout << "Writing buffer (" << data_size << ") to socket "  << " | " << "w x h: " << width << "x" << height << std::endl;
+        //std::cout << "Writing buffer (" << data_size << ") to socket "  << " | " << "w x h: " << width << "x" << height << std::endl;
         send(sock, buffer, data_size, 0);
     }
    
@@ -104,9 +104,8 @@ void sendfile(int socket, const char* filename){
 }
 
 int main(int argc, char* argv[]) {
-    //CefMainArgs main_args(::GetModuleHandle(NULL));
-    CefMainArgs main_args(argc, argv);
-   
+    CefMainArgs main_args(argc, argv); // TODO change and pass "no arguments"?
+
     int exit_code = CefExecuteProcess(main_args, NULL, NULL);
     if (exit_code >= 0)
       return exit_code;
@@ -142,6 +141,16 @@ int main(int argc, char* argv[]) {
     //sendfile(sock, "/tmp/600x400_2.data");
     //sendfile(sock, "/tmp/600x400.data");
     //sendfile(sock, "/tmp/600x400_2.data");
+
+    /*
+    CefApp::OnBeforeCommandLineProcessing(
+        const CefString& process_type, 
+        CefRefPtr<CefCommandLine> command_line
+    )
+    {
+        command_line->AppendArgument("url");
+    }
+    */
    
     CefSettings settings;
     CefInitialize(main_args, settings, NULL, NULL);
@@ -152,9 +161,20 @@ int main(int argc, char* argv[]) {
 
     OSRHandler* osrHandler = new OSRHandler(BROWSER_WIDTH, BROWSER_HEIGHT, sock);
     CefRefPtr<BrowserClient> browserClient = new BrowserClient(osrHandler);
+
+    CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
+    CefCommandLine::ArgumentList args;
+    command_line->GetArguments(args);
+    std::string url = "https://www.duckduckgo.com";
+    if(command_line->HasArguments()){
+        std::cout << "Args: " << args[0] << std::endl;
+        url = args[0].ToString();
+    }else{
+        std::cout << "No remaining args, using default url" << std::endl;
+    }
    
     // Create the first browser window.
-    CefBrowserHost::CreateBrowser(window_info, browserClient.get(), "https://duckduckgo.com/", browserSettings, nullptr, nullptr);
+    CefBrowserHost::CreateBrowser(window_info, browserClient.get(), url, browserSettings, nullptr, nullptr);
    
     CefRunMessageLoop();
     CefShutdown();
