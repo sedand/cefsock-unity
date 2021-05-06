@@ -210,6 +210,10 @@ if(OS_WINDOWS)
     ${CEFCLIENT_WINDOWS_SRCS}
   )
 
+  list(APPEND CEF_EXE_LINKER_FLAGS
+    /SUBSYSTEM:CONSOLE  # Configure as a console application.
+  )
+
   # Executable target.
   add_executable(${CEF_TARGET} WIN32 ${CEFCLIENT_SRCS})
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
@@ -232,4 +236,5 @@ if(OS_WINDOWS)
 
   # Copy CEF binary and resource files to the target output directory.
   COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}")
+  COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}")
 endif()
