@@ -190,12 +190,31 @@ int main(int argc, char* argv[]) {
     CefWindowInfo window_info;
     window_info.SetAsWindowless(0);
 
-    OSRHandler* osrHandler =
-        new OSRHandler(BROWSER_WIDTH, BROWSER_HEIGHT, ConnectSocket);
+    // use non-cef cmd args to configure
+    CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
+    CefCommandLine::ArgumentList args;
+    command_line->GetArguments(args);
+    std::string url = "https://www.duckduckgo.com";
+    int width = BROWSER_WIDTH;
+    int height = BROWSER_HEIGHT;
+    if(command_line->HasArguments()){
+        url = args[0].ToString();
+        if(args.size() > 1){
+            width = std::stoi(args[1].ToString());
+        }
+        if(args.size() > 2){
+            height = std::stoi(args[2].ToString());
+        }
+    }else{
+        std::cout << "No remaining args, using default url" << std::endl;
+    }
+    std::cout << "URL: " << url << " | WxH=" << width << "x" << height << std::endl;
+
+    OSRHandler* osrHandler = new OSRHandler(width, height, sock);
     CefRefPtr<BrowserClient> browserClient = new BrowserClient(osrHandler);
    
     // Create the first browser window.
-    CefBrowserHost::CreateBrowser(window_info, browserClient.get(), "https://duckduckgo.com/", browserSettings, nullptr, nullptr);
+    CefBrowserHost::CreateBrowser(window_info, browserClient.get(), url, browserSettings, nullptr, nullptr);
    
     CefRunMessageLoop();
     CefShutdown();

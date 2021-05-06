@@ -15,10 +15,10 @@ public class CefsockUnity : MonoBehaviour
 {
     public int imageWidth = 600;
     public int imageHeight = 400;
+    public string url = "https://duckduckgo.com";
 
     public string cefFolderName = "cefsock";
-    public string cefExecutableName = "cefsock";
-    public List<String> arguments = new List<String>{"--url=https://duckduckgo.com"};
+    private string cefExecutableName = "cefsock";
     private diag.Process cefProcess;
 
     private Thread socketThread;
@@ -68,15 +68,22 @@ public class CefsockUnity : MonoBehaviour
         Debug.Log("Cef is running.");
 
         //Debug.Log("Client is connected, starting async receive");
-        //string baseDir = new DirectoryInfo(Application.dataPath).Parent.FullName;
         //AsyncReceive();
 
     }
 
     void startCef(){
-        string wd = "./" + cefFolderName;
-        string cefPathExec = wd + "/" + cefExecutableName; // TODO windows?
-        string procArgs = String.Join(" ", arguments);
+        string cefPathExec, wd;
+        if (Application.platform == RuntimePlatform.WindowsPlayer){
+            wd = cefFolderName;
+            Debug.Log("Environment.CurrentDirectory: " + Environment.CurrentDirectory);
+            cefPathExec = Path.Combine(Environment.CurrentDirectory, "cefsock", cefExecutableName + ".exe");
+        }else{
+            wd = "./" + cefFolderName;
+            cefPathExec = Path.Combine(wd, cefExecutableName);
+        }
+
+        string procArgs = url + " " + imageWidth + " " + imageHeight;
         Debug.Log("Cef arguments: "+procArgs);
 
         // Start the process, hide it, and listen to its output

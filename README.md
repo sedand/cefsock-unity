@@ -32,9 +32,10 @@ Based on cef sample project [cef-project](https://bitbucket.org/chromiumembedded
 
 0. Modify `cefsock.cc`: Change URL, browser window size etc.
 1. Compile the cefsock binary (automatically downloads CEF). See README in folder `cef`.
-2. After compilation, copy the application folder `build/cefsock/Release` to the root of your unity project folder (optional: Rename it to `cefsock`)
+2. After compilation, copy the application folder `build/cefsock/Release` to the root of your unity project folder and rename it to `cefsock`.
 3. Copy the unity script ../unity/Cefsock-unity.cs to your unity project's Script folder.
-4. Add the CefSockUnity script to a RawImage gameobject. Adjust the `Cef Folder Name` script parameter to match the application foldername (if you did not rename the folder to `cefsock`), so that unity is able to find the executable.
+4. Add the CefSockUnity script to a RawImage gameobject. Configure the options. If you did not rename the folder to `cefsock` adjust the  `Cef Folder Name` script parameter to match the application foldername.
+5. After building your unity project, copy the `cefsock` folder to the build folder.
 
 ## Note
 
