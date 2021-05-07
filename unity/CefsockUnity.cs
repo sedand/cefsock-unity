@@ -10,9 +10,13 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using diag = System.Diagnostics;
+using UnityEngine.EventSystems;
 
-public class CefsockUnity : MonoBehaviour
+public class CefsockUnity : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
+    private int MOUSE_DOWN = 0;
+    private int MOUSE_UP = 1;
+
     public int imageWidth = 600;
     public int imageHeight = 400;
     public string url = "https://duckduckgo.com";
@@ -23,7 +27,7 @@ public class CefsockUnity : MonoBehaviour
 
     private Thread socketThread;
     private Socket listener;
-    private Socket handler;
+    private Socket client;
     private bool listening;
     public int port = 8888;
 
@@ -34,12 +38,18 @@ public class CefsockUnity : MonoBehaviour
     private int bufferSize;
     protected Texture2D browserTexture;
     protected RawImage targetImage;
+    protected Rect targetImageRect;
+
+    private Webserver ws;
+    public int webServerPort = 8889;
 
     // Start is called before the first frame update
     void Start()
     {
         // init images
         targetImage = GetComponent<RawImage>();
+        targetImageRect = targetImage.GetComponent<RectTransform>().rect;
+
         browserTexture = new Texture2D(imageWidth, imageHeight, TextureFormat.BGRA32, false);
 
         targetImage.texture = browserTexture;
@@ -56,7 +66,8 @@ public class CefsockUnity : MonoBehaviour
         socketThread.IsBackground = true;
         socketThread.Start();
 
-        while(!listening){
+        while (!listening)
+        {
             Debug.Log("Waiting for socket ...");
             Thread.Sleep(50);
         }
@@ -67,24 +78,29 @@ public class CefsockUnity : MonoBehaviour
         Thread.Sleep(250);
         Debug.Log("Cef is running.");
 
-        //Debug.Log("Client is connected, starting async receive");
-        //AsyncReceive();
-
+        // start webserver
+        ws = new Webserver();
+        ws.Start(webServerPort);
+        Debug.Log("Webserver listening on 127.0.0.1:" + webServerPort);
     }
 
-    void startCef(){
+    void startCef()
+    {
         string cefPathExec, wd;
-        if (Application.platform == RuntimePlatform.WindowsPlayer){
+        if (Application.platform == RuntimePlatform.WindowsPlayer)
+        {
             wd = cefFolderName;
             Debug.Log("Environment.CurrentDirectory: " + Environment.CurrentDirectory);
             cefPathExec = Path.Combine(Environment.CurrentDirectory, "cefsock", cefExecutableName + ".exe");
-        }else{
+        }
+        else
+        {
             wd = "./" + cefFolderName;
             cefPathExec = Path.Combine(wd, cefExecutableName);
         }
 
         string procArgs = url + " " + imageWidth + " " + imageHeight;
-        Debug.Log("Cef arguments: "+procArgs);
+        Debug.Log("Cef arguments: " + procArgs);
 
         // Start the process, hide it, and listen to its output
         var processInfo = new diag.ProcessStartInfo();
@@ -99,10 +115,10 @@ public class CefsockUnity : MonoBehaviour
         //processInfo.WindowStyle = diag.ProcessWindowStyle.Hidden;
 
         cefProcess = diag.Process.Start(processInfo);
-        cefProcess.OutputDataReceived += new diag.DataReceivedEventHandler((sender, e) => 
-                                 { Debug.Log("[CEF OUT] "+e.Data); });
-        cefProcess.ErrorDataReceived += new diag.DataReceivedEventHandler((sender, e) => 
-                                 { Debug.Log("[CEF ERR] "+e.Data); });
+        cefProcess.OutputDataReceived += new diag.DataReceivedEventHandler((sender, e) =>
+                                 { Debug.Log("[CEF OUT] " + e.Data); });
+        cefProcess.ErrorDataReceived += new diag.DataReceivedEventHandler((sender, e) =>
+                                 { Debug.Log("[CEF ERR] " + e.Data); });
         cefProcess.BeginOutputReadLine();
         cefProcess.BeginErrorReadLine();
         //string output = cefProcess.StandardOutput.ReadToEnd();  
@@ -110,13 +126,16 @@ public class CefsockUnity : MonoBehaviour
         //process.OutputDataReceived += Process_OutputDataReceived;
     }
 
-    void debugLog(string message){
-        if(verbose){
+    void debugLog(string message)
+    {
+        if (verbose)
+        {
             Debug.Log(message);
         }
     }
 
-    void AsyncReceive(Socket client){
+    void AsyncReceive(Socket client)
+    {
         Task.Run(new Action(() =>
             {
                 /*
@@ -126,22 +145,25 @@ public class CefsockUnity : MonoBehaviour
                     frameBufferChanged = true;
                 }
                 */
-                while (client != null && client.Connected){
+                while (client != null && client.Connected)
+                {
                     debugLog("Receiving next frame header...");
                     byte[] header = new byte[4];
                     int receivedHeaderBytes = client.Receive(header, 0, 4, SocketFlags.None);
-                    debugLog("Got "+receivedHeaderBytes+ " bytes");
+                    debugLog("Got " + receivedHeaderBytes + " bytes");
                     int frameLength = BitConverter.ToInt32(header, 0);
-                    debugLog("Got next frame length: "+frameLength);
+                    debugLog("Got next frame length: " + frameLength);
 
                     byte[] loopBuffer = new byte[frameLength];
                     //int bytesReceivedTotal = 0;
                     int bytesReceived = 0;
-                    while ((bytesReceived += client.Receive(loopBuffer, bytesReceived, frameLength-bytesReceived, SocketFlags.None)) > 0){
+                    while ((bytesReceived += client.Receive(loopBuffer, bytesReceived, frameLength - bytesReceived, SocketFlags.None)) > 0)
+                    {
                         //bytesReceivedTotal += bytesReceived;
-                        debugLog("Received bytes: "+bytesReceived);// + " | Total: "+bytesReceivedTotal);
+                        debugLog("Received bytes: " + bytesReceived);// + " | Total: "+bytesReceivedTotal);
 
-                        if(bytesReceived >= frameLength){ // TODO == ?
+                        if (bytesReceived >= frameLength)
+                        { // TODO == ?
                             debugLog("Frame receive complete");
 
                             Buffer.BlockCopy(loopBuffer, 0, frameBuffer, 0, frameLength);
@@ -150,7 +172,7 @@ public class CefsockUnity : MonoBehaviour
                             break;
                         }
                     }
-                    
+
                 }
 
                 /*
@@ -202,7 +224,8 @@ public class CefsockUnity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(frameBufferChanged){
+        if (frameBufferChanged)
+        {
             browserTexture.LoadRawTextureData(frameBuffer);
             browserTexture.Apply();
             frameBufferChanged = false;
@@ -211,6 +234,73 @@ public class CefsockUnity : MonoBehaviour
             //Debug.Log("Wrote framebuffer to file");
         }
 
+        // TEST
+        /*
+        if (Input.anyKey)
+        {
+            if (client != null && client.Connected)
+            {
+                Debug.Log("Sending frame header...");
+                byte[] header = BitConverter.GetBytes(65);
+                Debug.Log("header len: " + header.Length);
+                client.Send(header);
+            }
+        }
+        */
+    }
+
+    private byte[] buildMouseMessage(int type, float x, float y)
+    {
+        byte[] message = new byte[4 * 3];
+        Buffer.BlockCopy(BitConverter.GetBytes(type), 0, message, 0, 4);
+        Buffer.BlockCopy(BitConverter.GetBytes((int)x), 0, message, 4, 4);
+        Buffer.BlockCopy(BitConverter.GetBytes((int)y), 0, message, 8, 4);
+        return message;
+    }
+
+    private Vector2 changeCoordinates(Vector3 localHit)
+    {
+        // change coordinate to cef top left = 0,0
+        float cefY = -(localHit.y - targetImageRect.height);
+        float cefX = localHit.x;
+
+        // normalize to cef image size (raw image size may differ)
+        float ratioY = targetImageRect.height / imageHeight;
+        float ratioX = targetImageRect.width / imageWidth;
+        float cefYnorm = (cefY / ratioY);
+        float cefXnorm = (cefX / ratioX);
+
+        return new Vector2(cefXnorm, cefYnorm);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        Debug.Log(eventData);
+        Vector3 localHit = transform.InverseTransformPoint(eventData.pressPosition);
+
+        Vector2 cefHit = changeCoordinates(localHit);
+
+        //Debug.Log(localHit + " | cefY: " + cefY + "/" + cefYnorm + "| cefX: " + cefX + "/" + cefXnorm);
+        if (client != null && client.Connected)
+        {
+            byte[] message = buildMouseMessage(MOUSE_DOWN, cefHit.x, cefHit.y);
+            client.Send(message);
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        Debug.Log(eventData);
+        Vector3 localHit = transform.InverseTransformPoint(eventData.pressPosition);
+
+        Vector2 cefHit = changeCoordinates(localHit);
+
+        //Debug.Log(localHit + " | cefY: " + cefY + "/" + cefYnorm + "| cefX: " + cefX + "/" + cefXnorm);
+        if (client != null && client.Connected)
+        {
+            byte[] message = buildMouseMessage(MOUSE_UP, cefHit.x, cefHit.y);
+            client.Send(message);
+        }
     }
 
     private string getIPAddress()
@@ -257,10 +347,10 @@ public class CefsockUnity : MonoBehaviour
                 // Blocking
                 Debug.Log("Waiting for Connection");
 
-                handler = listener.Accept(); // TODO manage multiple connections?
+                client = listener.Accept(); // TODO manage multiple connections?
                 Debug.Log("Client Connected");
 
-                AsyncReceive(handler);
+                AsyncReceive(client);
             }
 
         }
@@ -278,16 +368,19 @@ public class CefsockUnity : MonoBehaviour
             socketThread.Abort();
         }
 
-        if (handler != null && handler.Connected)
+        if (client != null && client.Connected)
         {
-            handler.Disconnect(false);
+            client.Disconnect(false);
             Debug.Log("Disconnected!");
         }
     }
 
     void OnDisable()
     {
-        if(cefProcess != null && !cefProcess.HasExited){
+        ws.Stop();
+
+        if (cefProcess != null && !cefProcess.HasExited)
+        {
             cefProcess.Kill();
         }
         stopServer();
